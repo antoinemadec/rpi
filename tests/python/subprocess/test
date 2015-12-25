@@ -1,0 +1,14 @@
+#!/usr/bin/python
+
+import subprocess
+from time import *
+
+print "COUCOU"
+args=["Encule", "gros pd fils de pute"]
+
+#subprocess.Popen(["./print.bash", "66", "111"])
+#print "spawned"
+#sleep(1)
+
+string="\n".join(args)
+subprocess.check_output("echo -n "+'"'+string+'" | grep pd', shell=True)
