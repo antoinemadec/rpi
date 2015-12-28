@@ -13,8 +13,8 @@
 8   ; Med Fuzz Wah      ; MaxF=0 ; MinF=0 ; Speed=0
 9   ; Hi Fuzz Wah       ; MaxF=0 ; MinF=0 ; Speed=0
 10  ; Ring Mod Fuzz     ; Pitch=0 ; Boost=0
-11  ; Fuzz ; Boost=160 ; Tone=28 
+11  ; Fuzz ; Boost=160 ; Tone=28
 12  ; Subtractive OD ; Gain=1 ; Tone=15
 13  ; Tube Screamer ; Gain=231
 14  ; Digital Delay     ; Time=0 ; Repeat=0
-15  ; Tape Echo ; Time=149 ; Repeat=179
+15  ; Tape Echo ; Time=264 ; Repeat=179 
