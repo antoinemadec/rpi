@@ -7,6 +7,7 @@
 #====================================
 import copy
 import subprocess as proc
+from multiprocessing import Process, Queue
 from time import *
 import Adafruit_CharLCD as LCD
 
@@ -65,6 +66,7 @@ def clip(lo, x, hi):
 
 
 def get_next_state(state, sel, left, right, down, up):
+    global effect_nb
     mode        = state[0]
     eff_idx     = state[1]
     param_idx   = state[2]
@@ -89,16 +91,17 @@ def get_next_state(state, sel, left, right, down, up):
         param_nb    = len(param_val[eff_idx])
         if right:
             param_idx = clip(0, eff_idx+1, param_nb-1)
-        if left:
+        elif left:
             param_idx = clip(0, eff_idx-1, param_nb-1)
-        if up:
+        elif up:
             param_val[eff_idx][param_idx][1] = clip(0, param_val[eff_idx][param_idx][1]+1, MAX_PARAM_VALUE)
-        if down:
+        elif down:
             param_val[eff_idx][param_idx][1] = clip(0, param_val[eff_idx][param_idx][1]-1, MAX_PARAM_VALUE)
     return [mode, eff_idx, param_idx, param_val, save]
 
 
 def print_effect(effect_name):
+    print "DBG: effect_name=%s" % effect_name
     lcd.clear()
     lcd.blink(False)
     lcd.message(effect_name)
@@ -107,7 +110,7 @@ def print_effect(effect_name):
 
 
 def print_param(curr_param_val, param_idx, clear):
-    pos=[[0,0], [8,0], [1,0], [1,8]] 
+    pos=[[0,0], [8,0], [1,0], [1,8]]
     if clear:
         lcd.clear()
         lcd.blink(True)
@@ -121,6 +124,18 @@ def print_param(curr_param_val, param_idx, clear):
         lcd.set_cursor(pos[param_idx][0]+PARAM_NAME_SIZE,pos[param_idx][1])
         lcd.message(str(val))
     lcd.set_cursor(pos[param_idx][0],pos[param_idx][1])
+
+
+def print_lcd(q_print):
+    while True:
+        args = q_print.get()
+        # only consider last value
+        while q_print.empty() == False:
+            args = q_print.get()
+        if args[0] == 0:
+            print_effect(args[1])
+        else:
+            print_param(args[1],args[2],args[3])
 
 
 def send_param_pd(curr_param_val):
@@ -149,28 +164,37 @@ lcd.message("      by antoine");
 proc.call("pd -nomidi -nogui server.pd &", shell=True)
 sleep(5)
 
+# spawn LCD printing
+q_print = Queue()
+p = Process(target=print_lcd, args=(q_print,))
+p.start()
+
 # listen to GPIO ; communicate with pd
-state = [0,0,0,param_val,0]
-boot=1
+state   = [0,0,0,param_val,0]
+boot    = 1
+idle    = 1
 while True:
-    sleep(.1)
     next_state = get_next_state(
             state,
             lcd.is_pressed(LCD.SELECT),
             lcd.is_pressed(LCD.LEFT), lcd.is_pressed(LCD.RIGHT),
             lcd.is_pressed(LCD.DOWN), lcd.is_pressed(LCD.UP))
+    # avoid rebond with push buttons
+    if idle == 1:
+        sleep(.2)
+        idle = 0
     if next_state != state or boot:
         mode_old        = state[0]
         eff_idx_old     = state[1]
         state           = next_state
-        mode            = state[0]
+        mode            = state[0]      # 0: choose effect ; 1: change params
         eff_idx         = state[1]
         param_idx       = state[2]
         param_val       = state[3]
         save            = state[4]
         current_param   = param_val[eff_idx]
         if mode==0:
-            print_effect(effect_name[eff_idx])
+            q_print.put((mode, effect_name[eff_idx]))
             if eff_idx_old != eff_idx or boot:
                 boot = 0
                 # close old effect, open and display new
@@ -179,6 +203,8 @@ while True:
             if save:
                 update_cfg(CFG_FILENAME,effect_name[eff_idx],current_param)
         else:
-            print_param(current_param, param_idx, mode_old != mode)
-            pass
+            q_print.put((mode, current_param, param_idx, mode_old != mode))
         send_param_pd(current_param)
+    else:
+        sleep(.2)
+        idle = 1
