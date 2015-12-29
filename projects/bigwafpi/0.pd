@@ -1,4 +1,4 @@
-#N canvas 0 94 1776 858 10;
+#N canvas 1 100 1761 858 10;
 #X obj 105 106 adc~;
 #X obj 196 45 netreceive 5001 1;
 #X msg 86 46 \; pd dsp 1;

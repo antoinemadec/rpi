@@ -77,14 +77,13 @@ def get_next_state(state, key_pressed):
             param_idx=0
     elif mode==0:
         # effect mode
+        save = 0
         if key_pressed == LCD.RIGHT:
             eff_idx = clip(0, eff_idx+1, effect_nb-1)
         elif key_pressed == LCD.LEFT:
             eff_idx = clip(0, eff_idx-1, effect_nb-1)
         elif key_pressed == LCD.DOWN:
             save = 1
-        else:
-            save = 0
     else:
         # parameters mode
         param_nb    = len(param_val[eff_idx])
@@ -183,8 +182,8 @@ lcd.message("** Big Waf PI **\n");
 lcd.message("      by antoine");
 
 # spawn pd
-#proc.call("pd -nomidi -nogui server.pd &", shell=True)
-proc.call("pd -nomidi server.pd &", shell=True)
+proc.call("pd -nomidi -nogui server.pd &", shell=True)
+#proc.call("pd -nomidi server.pd &", shell=True)
 sleep(5)
 
 # spawn LCD printing

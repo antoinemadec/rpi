@@ -1,9 +1,9 @@
-#N canvas -2 46 1680 976 10;
+#N canvas 1 95 1680 892 10;
 #X obj 66 77 adc~;
 #X obj 66 99 hip~ 720.484;
 #X obj 66 121 *~;
 #X obj 207 103 hsl 128 15 11.851 118.234 0 0 empty empty empty -2 -8
-0 10 -260097 -1 -1 2684 1;
+0 10 -260097 -1 -1 7947 1;
 #X obj 82 299 *~;
 #X obj 92 269 *~;
 #X obj 83 337 /~ -3;
@@ -14,8 +14,8 @@
 #X obj 63 479 dac~;
 #X obj 494 51 netreceive 5001 1;
 #X obj 494 73 route 0 1 2;
-#X floatatom 204 123 5 0 0 0 - - -;
-#X floatatom 465 142 5 0 0 0 - - -;
+#X floatatom 204 123 5 0 0 0 - - -, f 5;
+#X floatatom 465 142 5 0 0 0 - - -, f 5;
 #X obj 465 120 * 0.116;
 #X connect 0 0 1 0;
 #X connect 0 0 9 0;
@@ -35,6 +35,6 @@
 #X connect 9 0 10 0;
 #X connect 10 0 11 0;
 #X connect 12 0 13 0;
-#X connect 13 2 16 0;
+#X connect 13 1 16 0;
 #X connect 16 0 3 0;
 #X connect 16 0 15 0;
