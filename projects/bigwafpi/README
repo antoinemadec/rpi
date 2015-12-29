@@ -1,0 +1,25 @@
+#==============================================================
+# raspberry pi 2
+#==============================================================
+#--------------------------------------------------------------
+# OS version
+#--------------------------------------------------------------
+pi@raspberrypi ~/github/rpi/projects/bigwafpi $ uname -a
+Linux raspberrypi 4.1.15-v7+ #830 SMP Tue Dec 15 17:02:45 GMT 2015 armv7l GNU/Linux
+
+pi@raspberrypi ~/github/rpi/projects/bigwafpi $ uname -r
+4.1.15-v7+
+
+pi@raspberrypi ~/github/rpi/projects/bigwafpi $ cat /etc/*release
+PRETTY_NAME="Raspbian GNU/Linux 8 (jessie)"
+
+
+#--------------------------------------------------------------
+# modifications to make USB audio work
+#--------------------------------------------------------------
+/etc/modules
+#snd-bcm2835
+
+/lib/modprobe.d/aliases.conf
+#options snd-usb-audio index=-2
+

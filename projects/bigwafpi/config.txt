@@ -17,4 +17,4 @@
 12  ; Subtractive OD ; Gain=1 ; Tone=15
 13  ; Tube Screamer ; Gain=231
 14  ; Digital Delay     ; Time=0 ; Repeat=0
-15  ; Tape Echo ; Time=264 ; Repeat=179 
+15  ; Tape Echo ; Time=150 ; Repeat=179 
