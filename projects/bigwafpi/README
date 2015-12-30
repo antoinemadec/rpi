@@ -2,17 +2,19 @@
 # raspberry pi 2
 #==============================================================
 #--------------------------------------------------------------
-# OS version
+# rpi version
 #--------------------------------------------------------------
-pi@raspberrypi ~/github/rpi/projects/bigwafpi $ uname -a
+raspberry pi 2 Model B v1.1
+
 Linux raspberrypi 4.1.15-v7+ #830 SMP Tue Dec 15 17:02:45 GMT 2015 armv7l GNU/Linux
-
-pi@raspberrypi ~/github/rpi/projects/bigwafpi $ uname -r
-4.1.15-v7+
-
-pi@raspberrypi ~/github/rpi/projects/bigwafpi $ cat /etc/*release
 PRETTY_NAME="Raspbian GNU/Linux 8 (jessie)"
 
+
+#--------------------------------------------------------------
+# installation
+#--------------------------------------------------------------
+sudo apt-get install puredata
+sudo apt-get install pd-comport pd-cyclone pd-mapping pd-zexy
 
 #--------------------------------------------------------------
 # modifications to make USB audio work

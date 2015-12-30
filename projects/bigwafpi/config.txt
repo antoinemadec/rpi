@@ -2,19 +2,19 @@
 # syntax : pd_file_number effect_name in0=default ; in1=default ...
 # comment a line with '#' if you don't want the effect on the big waf pi
 ############################################
-0   ; Clean
-1   ; Chorus ; Fdbk=123 ; Depth=93 ; Speed=133
-2   ; Warble Chorus ; Fdbk=289 ; Depth=200 ; Speed=498
-3   ; Tremolo ; Spd=37 ; Shape=20 ; Depth=190
-4   ; Vibrato ; Depth=286 ; Speed=229
-5   ; Wah ; MaxF=511 ; MinF=30 ; Speed=470
-6   ; Ring Modulator ; Pitch=23
-7   ; Low Fuzz Wah ; MaxF=415 ; MinF=30 ; Speed=30
-8   ; Med Fuzz Wah ; MaxF=222 ; MinF=45 ; Speed=63
-9   ; Hi Fuzz Wah ; MaxF=510 ; MinF=60 ; Speed=74
-10  ; Ring Mod Fuzz ; Pitch=60 ; Boost=17
-11  ; Fuzz ; Boost=13 ; Tone=28
-#12  ; Subtractive OD ; Gain=1 ; Tone=15
-13  ; Tube Screamer ; Gain=125 
-14  ; Digital Delay ; Time=87 ; Repeat=39
-15  ; Tape Echo ; Time=150 ; Repeat=179
+clean.pd            ; Clean
+chorus.pd           ; Chorus ; Fdbk=123 ; Depth=93 ; Speed=133
+warble_chorus.pd    ; Warble Chorus ; Fdbk=289 ; Depth=200 ; Speed=498
+tremolo.pd          ; Tremolo ; Spd=37 ; Shape=20 ; Depth=190
+vibrato.pd          ; Vibrato ; Depth=286 ; Speed=229
+wah.pd              ; Wah ; MaxF=511 ; MinF=30 ; Speed=470
+ring_modulator.pd   ; Ring Modulator ; Pitch=23
+low_fuzz_wah.pd     ; Low Fuzz Wah ; MaxF=415 ; MinF=30 ; Speed=30
+med_fuzz_wah.pd     ; Med Fuzz Wah ; MaxF=222 ; MinF=45 ; Speed=63
+hi_fuzz_wah.pd      ; Hi Fuzz Wah ; MaxF=510 ; MinF=60 ; Speed=74
+#ring_mod_fuzz.pd    ; Ring Mod Fuzz ; Pitch=60 ; Boost=17
+fuzz.pd             ; Fuzz ; Boost=16 ; Tone=15
+#subtractive_od.pd   ; Subtractive OD ; Gain=1 ; Tone=15
+tube_screamer.pd    ; Tube Screamer ; Gain=125
+digital_delay.pd    ; Digital Delay ST ; Repeat=171 ; TimeL=8 ; TimeR=24 ; Wet=511 
+tape_echo.pd        ; Tape Echo ; Time=150 ; Repeat=179

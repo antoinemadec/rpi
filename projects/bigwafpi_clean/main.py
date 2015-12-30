@@ -6,9 +6,7 @@
 # imports
 #====================================
 import copy
-import os
 import subprocess as proc
-from multiprocessing import Process, Queue
 from time import *
 import Adafruit_CharLCD as LCD
 
@@ -20,7 +18,6 @@ import Adafruit_CharLCD as LCD
 MAX_PARAM_VALUE = 512-1
 PARAM_NAME_SIZE = 5
 CFG_FILENAME    = "config.txt"
-SCRIPT_DIR = os.path.dirname(__file__)
 
 
 
@@ -55,6 +52,7 @@ def parse_cfg(file_name):
 
 def update_cfg(file_name, effect_name, curr_param_val):
     param_str = ""
+    print curr_param_val
     for i in range(0,len(curr_param_val)):
         name    = curr_param_val[i][0]
         value   = str(curr_param_val[i][1])
@@ -66,36 +64,36 @@ def clip(lo, x, hi):
     return max(lo, min(hi, x))
 
 
-def get_next_state(state, key_pressed):
-    global effect_nb
+def get_next_state(state, sel, left, right, down, up):
     mode        = state[0]
     eff_idx     = state[1]
     param_idx   = state[2]
     param_val   = copy.deepcopy(state[3])
     save        = state[4]
-    if key_pressed == LCD.SELECT:
+    if sel:
         mode = (mode+1)%2
         if mode==1:
             param_idx=0
     elif mode==0:
         # effect mode
-        save = 0
-        if key_pressed == LCD.RIGHT:
+        if right:
             eff_idx = clip(0, eff_idx+1, effect_nb-1)
-        elif key_pressed == LCD.LEFT:
+        elif left:
             eff_idx = clip(0, eff_idx-1, effect_nb-1)
-        elif key_pressed == LCD.DOWN:
+        elif down:
             save = 1
+        else:
+            save = 0
     else:
         # parameters mode
         param_nb    = len(param_val[eff_idx])
-        if key_pressed == LCD.RIGHT:
-            param_idx = clip(0, param_idx+1, param_nb-1)
-        elif key_pressed == LCD.LEFT:
-            param_idx = clip(0, param_idx-1, param_nb-1)
-        elif key_pressed == LCD.UP:
+        if right:
+            param_idx = clip(0, eff_idx+1, param_nb-1)
+        if left:
+            param_idx = clip(0, eff_idx-1, param_nb-1)
+        if up:
             param_val[eff_idx][param_idx][1] = clip(0, param_val[eff_idx][param_idx][1]+1, MAX_PARAM_VALUE)
-        elif key_pressed == LCD.DOWN:
+        if down:
             param_val[eff_idx][param_idx][1] = clip(0, param_val[eff_idx][param_idx][1]-1, MAX_PARAM_VALUE)
     return [mode, eff_idx, param_idx, param_val, save]
 
@@ -105,11 +103,11 @@ def print_effect(effect_name):
     lcd.blink(False)
     lcd.message(effect_name)
     lcd.set_cursor(0,1)
-    lcd.message("save +")
+    lcd.message("save +")   # TODO
 
 
 def print_param(curr_param_val, param_idx, clear):
-    pos=[[0,0], [8,0], [0,1], [8,1]]
+    pos=[[0,0], [8,0], [1,0], [1,8]] 
     if clear:
         lcd.clear()
         lcd.blink(True)
@@ -117,24 +115,12 @@ def print_param(curr_param_val, param_idx, clear):
             name = curr_param_val[p][0][0:PARAM_NAME_SIZE].ljust(PARAM_NAME_SIZE)
             val  = curr_param_val[p][1]
             lcd.set_cursor(pos[p][0],pos[p][1])
-            lcd.message(name+str(val).rjust(3))
+            lcd.message(name+str(val))
     else:
         val  = curr_param_val[param_idx][1]
         lcd.set_cursor(pos[param_idx][0]+PARAM_NAME_SIZE,pos[param_idx][1])
-        lcd.message(str(val).rjust(3))
+        lcd.message(str(val))
     lcd.set_cursor(pos[param_idx][0],pos[param_idx][1])
-
-
-def print_lcd(q_print):
-    while True:
-        args = q_print.get()
-        # only consider last value
-        while q_print.empty() == False:
-            args = q_print.get()
-        if args[0] == 0:
-            print_effect(args[1])
-        else:
-            print_param(args[1],args[2],args[3])
 
 
 def send_param_pd(curr_param_val):
@@ -143,30 +129,6 @@ def send_param_pd(curr_param_val):
     for i in range(0,len(curr_param_val)):
         string += str(p_idx[i]) + " " + str(curr_param_val[i][1]*2) + ";\n" # *2 because 512 to code 1024
     proc.check_output("echo -n "+'"'+string+'" | pdsend 5001 localhost udp', shell=True)
-
-
-def get_keys(q):
-    idle = 1
-    while True:
-        next_idle = 0
-        if lcd.is_pressed(LCD.SELECT):
-            q.put(LCD.SELECT)
-        elif lcd.is_pressed(LCD.LEFT):
-            q.put(LCD.LEFT)
-        elif lcd.is_pressed(LCD.RIGHT):
-            q.put(LCD.RIGHT)
-        elif lcd.is_pressed(LCD.DOWN):
-            q.put(LCD.DOWN)
-        elif lcd.is_pressed(LCD.UP):
-            q.put(LCD.UP)
-        else:
-            next_idle = 1
-        if idle:
-            sleep(.1)
-        else:
-            sleep(.01)
-        idle = next_idle
-
 
 
 #====================================
@@ -184,48 +146,39 @@ lcd.message("** Big Waf PI **\n");
 lcd.message("      by antoine");
 
 # spawn pd
-#proc.call("pd -nomidi -nogui server.pd &", shell=True)
-proc.call("pd -nomidi server.pd &", shell=True)
+proc.call("pd -nomidi -nogui server.pd &", shell=True)
 sleep(5)
 
-# spawn LCD printing
-q_print = Queue()
-p = Process(target=print_lcd, args=(q_print,))
-p.start()
-
-# spawn keyboard input
-q_keys = Queue()
-p = Process(target=get_keys, args=(q_keys,))
-p.start()
-
-# state machine
-state       = [0,0,0,param_val,0]
-next_state  = state
-boot        = 1
-idle        = 1
+# listen to GPIO ; communicate with pd
+state = [0,0,0,param_val,0]
+boot=1
 while True:
-    if boot == 0:
-        key_pressed = q_keys.get()
-        next_state  = get_next_state(state, key_pressed)
+    sleep(.1)
+    next_state = get_next_state(
+            state,
+            lcd.is_pressed(LCD.SELECT),
+            lcd.is_pressed(LCD.LEFT), lcd.is_pressed(LCD.RIGHT),
+            lcd.is_pressed(LCD.DOWN), lcd.is_pressed(LCD.UP))
     if next_state != state or boot:
         mode_old        = state[0]
         eff_idx_old     = state[1]
         state           = next_state
-        mode            = state[0]      # 0: choose effect ; 1: change params
+        mode            = state[0]
         eff_idx         = state[1]
         param_idx       = state[2]
         param_val       = state[3]
         save            = state[4]
         current_param   = param_val[eff_idx]
         if mode==0:
-            q_print.put((mode, effect_name[eff_idx]))
+            print_effect(effect_name[eff_idx])
             if eff_idx_old != eff_idx or boot:
                 boot = 0
                 # close old effect, open and display new
-                proc.check_output("echo '1 " + SCRIPT_DIR + "/patches/" + file_name[eff_idx_old] + ";' | pdsend 5000 localhost", shell=True)
-                proc.check_output("echo '0 " + SCRIPT_DIR + "/patches/" + file_name[eff_idx]     + ";' | pdsend 5000 localhost", shell=True)
+                proc.check_output("echo '1 "+ file_name[eff_idx_old] +";' | pdsend 5000 localhost", shell=True)
+                proc.check_output("echo '0 "+ file_name[eff_idx] +";' | pdsend 5000 localhost", shell=True)
             if save:
                 update_cfg(CFG_FILENAME,effect_name[eff_idx],current_param)
         else:
-            q_print.put((mode, current_param, param_idx, mode_old != mode))
+            print_param(current_param, param_idx, mode_old != mode)
+            pass
         send_param_pd(current_param)

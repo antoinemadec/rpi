@@ -1,0 +1,20 @@
+############################################
+# syntax : pd_file_number effect_name in0=default ; in1=default ...
+# comment a line with '#' if you don't want the effect on the big waf pi
+############################################
+0   ; Clean
+#1   ; Chorus            ; Fdbk=0 ; Depth=0 ; Speed=0
+#2   ; Warble Chorus     ; Fdbk=0 ; Depth=0 ; Speed=0
+#3   ; Tremolo           ; Spd=0 ; Shape=0 ; Depth=0
+#4   ; Vibrato           ; Depth=0 ; Speed=0
+#5   ; Wah               ; MaxF=0 ; MinF=0 ; Speed=0
+#6   ; Ring Modulator    ; Pitch=0
+#7   ; Low Fuzz Wah      ; MaxF=0 ; MinF=0 ; Speed=0
+#8   ; Med Fuzz Wah      ; MaxF=0 ; MinF=0 ; Speed=0
+#9   ; Hi Fuzz Wah       ; MaxF=0 ; MinF=0 ; Speed=0
+#10  ; Ring Mod Fuzz     ; Pitch=0 ; Boost=0
+#11  ; Fuzz              ; Boost=0 ; Tone=0
+#12  ; Subtractive OD    ; Gain=0 ; Tone=0
+#13  ; Tube Screamer     ; Gain=0
+#14  ; Digital Delay     ; Time=0 ; Repeat=0
+15  ; Tape Echo         ; Time=0 ; Repeat=0
