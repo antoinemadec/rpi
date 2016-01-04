@@ -3,7 +3,7 @@
 # comment a line with '#' if you don't want the effect on the big waf pi
 ############################################
 clean.pd            ; Clean
-chorus.pd           ; Chorus ; Fdbk=123 ; Depth=93 ; Speed=133
+chorus.pd           ; Chorus ; Fdbk=216 ; Depth=314 ; Speed=133 
 warble_chorus.pd    ; Warble Chorus ; Fdbk=289 ; Depth=200 ; Speed=498
 tremolo.pd          ; Tremolo ; Spd=37 ; Shape=20 ; Depth=190
 vibrato.pd          ; Vibrato ; Depth=286 ; Speed=229
@@ -16,5 +16,5 @@ hi_fuzz_wah.pd      ; Hi Fuzz Wah ; MaxF=510 ; MinF=60 ; Speed=74
 fuzz.pd             ; Fuzz ; Boost=16 ; Tone=15
 #subtractive_od.pd   ; Subtractive OD ; Gain=1 ; Tone=15
 tube_screamer.pd    ; Tube Screamer ; Gain=125
-digital_delay.pd    ; Digital Delay ST ; Repeat=171 ; TimeL=8 ; TimeR=24 ; Wet=511 
+digital_delay.pd    ; Digital Delay ST ; Repeat=171 ; TimeL=8 ; TimeR=24 ; Wet=511
 tape_echo.pd        ; Tape Echo ; Time=150 ; Repeat=179

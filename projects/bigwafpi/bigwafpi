@@ -184,8 +184,8 @@ lcd.message("** Big Waf PI **\n");
 lcd.message("      by antoine");
 
 # spawn pd
-#proc.call("pd -nomidi -nogui server.pd &", shell=True)
-proc.call("pd -nomidi server.pd &", shell=True)
+proc.call("pd -nomidi -nogui server.pd &", shell=True)
+#proc.call("pd -nomidi server.pd &", shell=True)
 sleep(5)
 
 # spawn LCD printing
