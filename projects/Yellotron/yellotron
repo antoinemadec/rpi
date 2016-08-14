@@ -102,8 +102,8 @@ lcd.message("** Yellotron **\n");
 lcd.message("***************");
 
 # spawn pd
-proc.call("pd -nogui -midiaddindev /dev/midi1 Yellotron.pd &", shell=True)
-#proc.call("pd -midiaddindev /dev/midi1 Yellotron.pd &", shell=True)
+proc.call("pd -nogui -midiaddindev /dev/midi1 -audioadddev 'USB PnP Sound Device' Yellotron.pd &", shell=True)
+#proc.call("pd -midiaddindev /dev/midi1 -audioadddev 'USB PnP Sound Device' Yellotron.pd &", shell=True)
 sleep(5)
 
 # spawn LCD printing
