@@ -124,6 +124,10 @@ lcd.set_color(1,1,1)
 lcd.message("** Yellotron **\n");
 lcd.message("***************");
 
+# spawn pd server: will update_config whenever we receive something on port 5001
+proc.check_call("./bin/pdserver 5001 ./bin/update_config &", shell=True)
+sleep(1)
+
 # spawn pd
 proc.call("pd -nogui -midiaddindev /dev/midi1 -audioadddev 'USB PnP Sound Device' Yellotron.pd &", shell=True)
 #proc.call("pd -midiaddindev /dev/midi1 -audioadddev 'USB PnP Sound Device' Yellotron.pd &", shell=True)
@@ -152,4 +156,4 @@ while True:
         state           = next_state
         instru_idx      = state
         q_print.put(instru_name[instru_idx])
-        proc.check_output("echo '0 " + str(instru_idx) + ";'  | pdsend 5000 localhost", shell=True)
+        proc.check_call("echo '0 " + str(instru_idx) + ";'  | pdsend 5000 localhost", shell=True)
