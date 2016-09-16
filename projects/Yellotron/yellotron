@@ -30,15 +30,38 @@ def clip(lo, x, hi):
     return max(lo, min(hi, x))
 
 
+# TODO
+def parse_cfg(file_name):
+    effect_dict     = {}
+    cfg_file        = open (file_name)
+    cfg             = cfg_file.read().splitlines()
+    for line in cfg:
+        if line[0] == '#':
+            continue
+        else:
+            line_elts = line.split(";")
+            idx = 0
+            for elt in line_elts:
+                if idx == 0:
+                    instru_name = elt.strip()
+                    effect_dict[instru_name] = {}
+                else:
+                    eff_val = elt.split("=")
+                    effect_dict[instru_name][eff_val[0].strip()] = eff_val[1].strip()
+                idx = idx + 1
+    print(effect_dict)
+
+
 def get_next_state(instru_idx, key_pressed):
     global instru_nb
+    save = 0
     if key_pressed == LCD.RIGHT:
         instru_idx = clip(0, instru_idx+1, instru_nb-1)
     elif key_pressed == LCD.LEFT:
         instru_idx = clip(0, instru_idx-1, instru_nb-1)
     elif key_pressed == LCD.DOWN:
         save = 1
-    return instru_idx
+    return (instru_idx, save)
 
 
 def print_lcd(q_print):
@@ -123,10 +146,10 @@ boot        = 1
 while True:
     if boot == 0:
         key_pressed = q_keys.get()
-        next_state  = get_next_state(state, key_pressed)
+        next_state  = get_next_state(state, key_pressed)[0]
     if next_state != state or boot:
         boot            = 0
         state           = next_state
         instru_idx      = state
         q_print.put(instru_name[instru_idx])
-        proc.check_output("echo '" + str(instru_idx) + ";'  | pdsend 5000 localhost", shell=True)
+        proc.check_output("echo '0 " + str(instru_idx) + ";'  | pdsend 5000 localhost", shell=True)
