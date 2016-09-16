@@ -1,14 +1,6 @@
 #################################################################
-# syntax : intru_<index> ; <ctl0_val> <ctl1_val> ...;
+# syntax : intru_<index> <ctl0_val> <ctl1_val>
 # comment are suppported
 #################################################################
-instru_0    ;1 2 3 4 5 6
-instru_1    ;
-instru_2    ;
-instru_3    ;
-instru_4    ;
-instru_5    ;
-instru_6    ;
-instru_7    ;
-instru_8    ;
-instru_9    ;
+instru_0 2 3 4 5 6 7
+instru_1 2 3 4 5 6 7

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+usage() {
+  cat << EOF
+Usage: $0 <port> <cmd>
+
+Listen on <port> following pure data's FUDI protocol.
+Execute <cmd> <message_from_pd> in a bash shell.
+EOF
+}
+
+
+[ "$0" = "-h" ] && usage && exit 0
+[ "$#" != 2 ] && usage && exit 1
+
+port=$1
+cmd=$2
+
+pdreceive 5001 | xargs -i -n1 echo $cmd {} | bash
