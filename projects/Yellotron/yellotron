@@ -9,29 +9,15 @@ import os
 import subprocess as proc
 from multiprocessing import Process, Queue
 from time import *
+import pdserver
 import Adafruit_CharLCD as LCD
-
-
-
-#====================================
-# parameters
-#====================================
-MAX_PARAM_VALUE = 512-1
-PARAM_NAME_SIZE = 5
-CFG_FILENAME    = "config.txt"
-SCRIPT_DIR = os.path.dirname(__file__)
 
 
 
 #====================================
 # functions
 #====================================
-def clip(lo, x, hi):
-    return max(lo, min(hi, x))
-
-
-# TODO
-def parse_cfg(file_name):
+def parse_cfg(file_name, instru_idx):
     effect_dict     = {}
     cfg_file        = open (file_name)
     cfg             = cfg_file.read().splitlines()
@@ -39,29 +25,10 @@ def parse_cfg(file_name):
         if line[0] == '#':
             continue
         else:
-            line_elts = line.split(";")
-            idx = 0
-            for elt in line_elts:
-                if idx == 0:
-                    instru_name = elt.strip()
-                    effect_dict[instru_name] = {}
-                else:
-                    eff_val = elt.split("=")
-                    effect_dict[instru_name][eff_val[0].strip()] = eff_val[1].strip()
-                idx = idx + 1
-    print(effect_dict)
-
-
-def get_next_state(instru_idx, key_pressed):
-    global instru_nb
-    save = 0
-    if key_pressed == LCD.RIGHT:
-        instru_idx = clip(0, instru_idx+1, instru_nb-1)
-    elif key_pressed == LCD.LEFT:
-        instru_idx = clip(0, instru_idx-1, instru_nb-1)
-    elif key_pressed == LCD.DOWN:
-        save = 1
-    return (instru_idx, save)
+            line_elts = line.split()
+            if line_elts[0] == ("instru_" + str(instru_idx)):
+              return line_elts[1:]
+    return []
 
 
 def print_lcd(q_print):
@@ -76,20 +43,14 @@ def print_lcd(q_print):
         lcd.set_cursor(0,1)
 
 
-def get_keys(q):
+def get_keys():
     idle = 1
     while True:
         next_idle = 0
-        if lcd.is_pressed(LCD.SELECT):
-            q.put(LCD.SELECT)
-        elif lcd.is_pressed(LCD.LEFT):
-            q.put(LCD.LEFT)
-        elif lcd.is_pressed(LCD.RIGHT):
-            q.put(LCD.RIGHT)
-        elif lcd.is_pressed(LCD.DOWN):
-            q.put(LCD.DOWN)
-        elif lcd.is_pressed(LCD.UP):
-            q.put(LCD.UP)
+        if lcd.is_pressed(LCD.DOWN):
+            # send command to PD patch to get the MIDI controls value
+            # so we can save them in the config file
+            proc.check_call("echo '1;'  | pdsend 5000 localhost", shell=True)
         else:
             next_idle = 1
         if idle:
@@ -124,6 +85,11 @@ lcd.set_color(1,1,1)
 lcd.message("** Yellotron **\n");
 lcd.message("***************");
 
+# spawn pd server
+q_cmd_from_pd = Queue()
+p =  Process(target=pdserver.start, args=(5001, q_cmd_from_pd))
+p.start()
+
 # spawn pd
 #proc.call("pd -nogui -midiaddindev /dev/midi1 -audioadddev 'USB PnP Sound Device' Yellotron.pd &", shell=True)
 proc.call("pd -midiaddindev /dev/midi1 -audioadddev 'USB PnP Sound Device' Yellotron.pd &", shell=True)
@@ -136,20 +102,28 @@ p.start()
 
 # spawn keyboard input
 q_keys = Queue()
-p = Process(target=get_keys, args=(q_keys,))
+p = Process(target=get_keys)
 p.start()
 
-# state machine
-state       = 0     # state is istru idx
-next_state  = state
-boot        = 1
+# read cmd from PD patch
+instru_idx      = 0
+q_print.put(str(instru_idx) + "-" + instru_name[instru_idx])
+l_preset =  parse_cfg("config.txt", instru_idx)
+if l_preset != []:
+    # send MIDI control presets
+    str_preset = ' '.join(str(e) for e in l_preset)
+    proc.check_call("echo '0 " + str_preset + ";'  | pdsend 5000 localhost", shell=True)
 while True:
-    if boot == 0:
-        key_pressed = q_keys.get()
-        next_state  = get_next_state(state, key_pressed)[0]
-    if next_state != state or boot:
-        boot            = 0
-        state           = next_state
-        instru_idx      = state
-        q_print.put(instru_name[instru_idx])
-        proc.check_call("echo '0 " + str(instru_idx) + ";'  | pdsend 5000 localhost", shell=True)
+    cmd_from_pd = q_cmd_from_pd.get()
+    if "ctlin" in cmd_from_pd:
+        # PD patch response with MIDI control values,
+        # save them in config file
+        proc.check_call("./bin/update_config " + str(instru_idx) + cmd_from_pd[5:], shell=True)
+    elif "instru_idx" in cmd_from_pd:
+        instru_idx = int(cmd_from_pd.split()[1].strip(";"))
+        q_print.put(str(instru_idx) + "-" + instru_name[instru_idx])
+        l_preset =  parse_cfg("config.txt", instru_idx)
+        if l_preset != []:
+            # send MIDI control presets
+            str_preset = ' '.join(str(e) for e in l_preset)
+            proc.check_call("echo '0 " + str_preset + ";'  | pdsend 5000 localhost", shell=True)
